@@ -23,7 +23,7 @@ if ( test-path $destination)
 	}
 	else
 	{
-		$overwirte = read-host -prompt "$destination exist, do you want to overwrite the file? Yes/No"
+		$overwrite = read-host -prompt "$destination exist, do you want to overwrite the file? Yes/No"
 		if ( ($overwrite -eq "no") -or ($overwrite -eq "n") )
 		{
 			write-host "Aborting the download"
