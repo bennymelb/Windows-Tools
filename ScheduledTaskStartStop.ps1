@@ -30,7 +30,6 @@ else
 }
 
 # Display the script usage if necessary variable is not defined or passed to this script
-
 if ( ((!$TargetServer) -and (!$TargetServerList)) -or ((!$ScheduledTask) -and (!$ScheduledTaskList)) -or (!$TaskStatus) -or (($TargetServer) -and ($TargetServerList)) -or (($ScheduledTask) -and ($ScheduledTaskList)) )
 { 
 	$scriptname = $MyInvocation.MyCommand.Name
@@ -182,33 +181,72 @@ foreach ($Server in $TargetServerArr)
 			($TaskScheduler = New-Object -ComObject Schedule.Service).Connect($Server)
 			$MyTask = $TaskScheduler.GetFolder('\').GetTask($Task)
 			
-			# Enable the task
-			If ($TaskStatus -eq 'Enabled')
+			If (!$?)
 			{
-				log -logstring "Enabling the task $Task on $Server" -app $cmd -logfile $logfile
-				$MyTask.Enabled = $true
+				log -logstring "Could not find $Task on $Server" -app $cmd -logfile $logfile
 			}
-			
-			# Disable the task
-			If ($TaskStatus -eq 'Disabled')
+			else
 			{
-				log -logstring "Disabling the task $Task on $Server" -app $cmd -logfile $logfile
-				$MyTask.Enabled = $false
+				# Enable the task
+				If ($TaskStatus -eq 'Enabled')
+				{
+					log -logstring "Enabling the task $Task on $Server" -app $cmd -logfile $logfile
+					$MyTask.Enabled = $true
+					if ($?)
+					{
+						log -logstring "Successfully enabled $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to enable $Task on $Server" -app $cmd -logfile $logfile
+					}
+				}
+			
+				# Disable the task
+				If ($TaskStatus -eq 'Disabled')
+				{
+					log -logstring "Disabling the task $Task on $Server" -app $cmd -logfile $logfile
+					$MyTask.Enabled = $false
+					if ($?)
+					{
+						log -logstring "Successfully disabled $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to disable $Task on $Server" -app $cmd -logfile $logfile
+					}
+				}
+			
+				# Run the task
+				If ($TaskStatus -eq 'Start')
+				{
+					log -logstring "Running the task $Task on $Server" -app $cmd -logfile $logfile
+					schtasks /run /s $Server /tn $Task
+					if ($?)
+					{
+						log -logstring "Successfully started $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to start $Task on $Server" -app $cmd -logfile $logfile
+					}
+				}
+			
+				# Stop the task
+				if ($TaskStatus -eq 'Stop')
+				{
+					log -logstring "Stopping the task $Task on $Server" -app $cmd -logfile $logfile
+					schtasks /end /s $Server /tn $Task
+					if ($?)
+					{
+						log -logstring "Successfully stopped $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to stop $Task on $Server" -app $cmd -logfile $logfile
+					}
+				}			
 			}
-			
-			# Run the task
-			If ($TaskStatus -eq 'Start')
-			{
-				log -logstring "Running the task $Task on $Server" -app $cmd -logfile $logfile
-				schtasks /run /s $Server /tn $Task
-			}
-			
-			# Stop the task
-			if ($TaskStatus -eq 'Stop')
-			{
-				log -logstring "Stopping the task $Task on $Server" -app $cmd -logfile $logfile
-				schtasks /end /s $Server /tn $Task
-			}			
 		}
 	}	
 }
