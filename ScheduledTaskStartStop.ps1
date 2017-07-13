@@ -181,7 +181,7 @@ foreach ($Server in $TargetServerArr)
 			($TaskScheduler = New-Object -ComObject Schedule.Service).Connect($Server)
 			$MyTask = $TaskScheduler.GetFolder('\').GetTask($Task)
 			
-			If ($LASTEXITCODE -ne 0)
+			If (!$?)
 			{
 				log -logstring "Could not find $Task on $Server" -app $cmd -logfile $logfile
 			}
