@@ -192,6 +192,14 @@ foreach ($Server in $TargetServerArr)
 				{
 					log -logstring "Enabling the task $Task on $Server" -app $cmd -logfile $logfile
 					$MyTask.Enabled = $true
+					if ($?)
+					{
+						log -logstring "Successfully enabled $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to enable $Task on $Server" -app $cmd -logfile $logfile
+					}
 				}
 			
 				# Disable the task
@@ -199,6 +207,14 @@ foreach ($Server in $TargetServerArr)
 				{
 					log -logstring "Disabling the task $Task on $Server" -app $cmd -logfile $logfile
 					$MyTask.Enabled = $false
+					if ($?)
+					{
+						log -logstring "Successfully disabled $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to disable $Task on $Server" -app $cmd -logfile $logfile
+					}
 				}
 			
 				# Run the task
@@ -206,6 +222,14 @@ foreach ($Server in $TargetServerArr)
 				{
 					log -logstring "Running the task $Task on $Server" -app $cmd -logfile $logfile
 					schtasks /run /s $Server /tn $Task
+					if ($?)
+					{
+						log -logstring "Successfully started $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to start $Task on $Server" -app $cmd -logfile $logfile
+					}
 				}
 			
 				# Stop the task
@@ -213,6 +237,14 @@ foreach ($Server in $TargetServerArr)
 				{
 					log -logstring "Stopping the task $Task on $Server" -app $cmd -logfile $logfile
 					schtasks /end /s $Server /tn $Task
+					if ($?)
+					{
+						log -logstring "Successfully stopped $Task on $Server" -app $cmd -logfile $logfile
+					}
+					else 
+					{
+						log -logstring "Failed to stop $Task on $Server" -app $cmd -logfile $logfile
+					}
 				}			
 			}
 		}
