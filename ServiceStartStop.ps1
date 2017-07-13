@@ -199,10 +199,23 @@ foreach ($Server in $TargetServerArr)
 					}
 					else
 					{
-						Start-Service -InputObject $TargetService -Verbose -errorvariable err			
-						if ($err)
+						log -logstring "Starting $Service on $Server..." -app $cmd -logfile $logfile
+						$StartupCounter = 0
+						$ServiceStatus = 0
+						do 
 						{
-							log -logstring "Failed to start the service $Service on $Server" -app $cmd -logfile $logfile -color red
+							Start-Service -InputObject $TargetService -Verbose -errorvariable err
+							if (!$err)
+							{
+								$ServiceStatus++
+								$StartupCounter = 2								
+							}
+							$StartupCounter++							
+						} while ($StartupCounter -lt 2) 
+
+						if ($ServiceStatus -eq 0)
+						{
+							log -logstring "Failed to start the service $Service on $Server after $StartupCounter attempt" -app $cmd -logfile $logfile -color red
 							log -logstring "$err" -app $cmd -logfile $logfile -color red
 						}
 						else
@@ -219,10 +232,22 @@ foreach ($Server in $TargetServerArr)
 					}
 					else
 					{
-						Stop-Service -InputObject $TargetService -force -Verbose -errorvariable err
-						if ($err)
+						$StartupCounter = 0
+						$ServiceStatus = 0
+						do 
 						{
-							log -logstring "Failed to stop the service $Service on $Server" -app $cmd -logfile $logfile -color red
+							Stop-Service -InputObject $TargetService -force -Verbose -errorvariable err
+							if (!$err)
+							{
+								$ServiceStatus++
+								$StartupCounter = 2
+							}
+							$StartupCounter++
+						} while ($StartupCounter -lt 2) 
+						
+						if ($ServiceStatus -eq 0)
+						{
+							log -logstring "Failed to stop the service $Service on $Server after $StartupCounter attempt" -app $cmd -logfile $logfile -color red
 							log -logstring "$err" -app $cmd -logfile $logfile -color red
 						}
 						else
@@ -233,10 +258,22 @@ foreach ($Server in $TargetServerArr)
 				}
 				if ($Action -eq 'Restart')
 				{
-					Restart-Service -InputObject $TargetService -force -Verbose -errorvariable err
-					if ($err)
+					$StartupCounter = 0
+					$ServiceStatus = 0
+					do 
 					{
-						log -logstring "Failed to restart the service $Service on $Server" -app $cmd -logfile $logfile -color red
+						Restart-Service -InputObject $TargetService -force -Verbose -errorvariable err
+						if (!$err)
+						{
+							$ServiceStatus++
+							$StartupCounter = 2
+						}
+						$StartupCounter++
+					} while ($StartupCounter -lt 2) 
+					
+					if ($ServiceStatus -eq 0)
+					{
+						log -logstring "Failed to restart the service $Service on $Server after $StartupCounter attempt" -app $cmd -logfile $logfile -color red
 						log -logstring "$err" -app $cmd -logfile $logfile -color red
 					}
 					else
