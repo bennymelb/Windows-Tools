@@ -164,8 +164,18 @@ foreach ($Server in $TargetServerArr)
 {
 	write-debug "The server we are working on is $Server"	
 	# Check if the target server is up
-	Test-Connection -Computername $Server -errorvariable err
-	if ($err)
+	$pingcounter = 0
+	$ServerStatus = 0
+	do {
+		Test-Connection -count 1 -Computername $Server -errorvariable err
+		if (!$err)
+		{
+			$ServerStatus++
+			$pingcounter = 5
+		}
+		$pingcounter++
+	} while ($pingcounter -lt 5)
+	if ($ServerStatus -eq 0)
 	{
 		log -logstring "The target server $Server does not seems to be up, skipping to the next server" -app $cmd -logfile $logfile -color red
 	}
