@@ -81,8 +81,8 @@ log -logstring "************************ $cmd is triggered by $(whoami) ********
 # ****           	   Validation            	   ****
 # *****************************************************
 
-# We only accept Automatic/Manual/Disabled as the startup type to the service
-$ValidStartupTypeList = "Automatic","Manual","Disabled"
+# We only accept Automatic/Manual/Disabled/Delayed as the startup type to the service
+$ValidStartupTypeList = "Automatic","Manual","Disabled","Delayed"
 foreach ($ValidStartupType in $ValidStartupTypeList)
 {
 	write-debug "This valid action is $ValidAction"
@@ -204,15 +204,31 @@ foreach ($Server in $TargetServerArr)
 					}
 					else
 					{
-						log -logstring "The startup type of service $Service on $Server is $ServiceCurrentStartupType, changing it to $StartupType" -app $cmd -logfile $logfile
-						Set-Service -ComputerName $Server -Name $TargetService.Name -StartupType $StartupType -errorvariable err
-						if ($err)
+						if ($StartupType -eq "Delayed")
 						{
-							log -logstring "[Error] Failed to change the startup type of service $Service on $Server to $StartupType" -app $cmd -logfile $logfile
+							log -logstring "Changing the service $Service on $Server to $StartupType" -app $cmd -logfile $logfile
+							$o = sc.exe \\$Server config $Service start=delayed-auto
+							if ($?)
+							{
+								log -logstring "Successfully changed the startup type of service $Service on $Server to $StartupType" -app $cmd -logfile $logfile	
+							}
+							else 
+							{
+								log -logstring "[Error] Failed to change the startup type of service $Service on $Server to $StartupType" -app $cmd -logfile $logfile
+							}
 						}
-						else
+						else 
 						{
-							log -logstring "Successfully changed the startup type of service $Service on $Server to $StartupType" -app $cmd -logfile $logfile
+							log -logstring "The startup type of service $Service on $Server is $ServiceCurrentStartupType, changing it to $StartupType" -app $cmd -logfile $logfile
+							Set-Service -ComputerName $Server -Name $TargetService.Name -StartupType $StartupType -errorvariable err
+							if ($err)
+							{
+								log -logstring "[Error] Failed to change the startup type of service $Service on $Server to $StartupType" -app $cmd -logfile $logfile
+							}
+							else
+							{
+								log -logstring "Successfully changed the startup type of service $Service on $Server to $StartupType" -app $cmd -logfile $logfile
+							}	
 						}
 					}				
 				}
